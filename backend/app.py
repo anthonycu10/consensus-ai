@@ -1,9 +1,16 @@
-from flask import Flask, request, jsonify
-from gpt import get_gpt_response
-from llama import get_llama_response
-from gemini import get_gemini_response
+from flask import Flask, request, jsonify, Response
+from flask_cors import CORS
+# from llms import get_gpt_response, get_gemini_response
 
 app = Flask(__name__)
+CORS(app)
+
+@app.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        res = Response()
+        res.headers['X-Content-Type-Options'] = '*'
+        return res
 
 @app.route('/get-responses', methods=['POST'])
 def get_responses():
@@ -11,9 +18,9 @@ def get_responses():
     prompt = data['prompt']
     
     # Get initial responses
-    gpt_response = get_gpt_response(prompt)
-    llama_response = get_llama_response(prompt)
-    gemini_response = get_gemini_response(prompt)
+    gpt_response = "hello"
+    llama_response = "hello"
+    gemini_response = "hi"
     
     responses = {
         'GPT': gpt_response,
@@ -26,14 +33,14 @@ def get_responses():
     
     for model_name, model_response in responses.items():
         combined_prompt = f"Original prompt: {prompt}\n\nResponses:\n1. {gpt_response}\n2. {llama_response}\n3. {gemini_response}\n\nWhich is the best response?"
-        if model_name == 'GPT':
-            vote = get_gpt_response(combined_prompt)
-        elif model_name == 'LLaMa':
-            vote = get_llama_response(combined_prompt)
-        elif model_name == 'Gemini':
-            vote = get_gemini_response(combined_prompt)
+        # if model_name == 'GPT':
+        #     vote = get_gpt_response(combined_prompt)
+        # elif model_name == 'LLaMa':
+        #     vote = get_llama_response(combined_prompt)
+        # elif model_name == 'Gemini':
+        #     vote = get_gemini_response(combined_prompt)
         
-        votes[vote] += 1
+        votes['GPT'] += 1
     
     # Determine the winner
     winner = max(votes, key=votes.get)
@@ -42,4 +49,3 @@ def get_responses():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
